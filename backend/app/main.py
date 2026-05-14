@@ -68,6 +68,11 @@ def create_app() -> FastAPI:
         # Simple liveness check — no DB ping, no secrets exposed
         return {"status": "ok"}
 
+    import atexit
+    from app.services.retention import start_retention_scheduler
+    _scheduler = start_retention_scheduler()
+    atexit.register(_scheduler.shutdown)
+
     return application
 
 
