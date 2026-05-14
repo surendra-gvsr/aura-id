@@ -1,0 +1,134 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "Aura ID API", "version": "0.1.0" },
+  "paths": {
+    "/scans": {
+      "post": {
+        "operationId": "createScan",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["image", "hotelId"],
+                "properties": {
+                  "image": { "type": "string", "format": "binary" },
+                  "hotelId": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Scan" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scans/{id}": {
+      "get": {
+        "operationId": "getScan",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Scan" }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateScan",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ExtractedFields" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Scan" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/hotels/me": {
+      "get": {
+        "operationId": "getMyHotel",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Hotel" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Scan": {
+        "type": "object",
+        "required": ["id", "status"],
+        "properties": {
+          "id": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "processing", "complete", "failed"]
+          },
+          "extractedFields": { "$ref": "#/components/schemas/ExtractedFields" }
+        }
+      },
+      "ExtractedFields": {
+        "type": "object",
+        "properties": {
+          "fullName": { "type": "string" },
+          "dateOfBirth": { "type": "string", "format": "date" },
+          "documentNumber": { "type": "string" },
+          "address": { "type": "string" }
+        }
+      },
+      "Hotel": {
+        "type": "object",
+        "required": ["id", "name", "imageRetentionHours"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "imageRetentionHours": { "type": "integer" }
+        }
+      }
+    }
+  }
+}
