@@ -6,6 +6,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
+from app.middleware.audit import AuditMiddleware
+from app.middleware.subscription_gate import SubscriptionGateMiddleware
 from app.utils.logging import configure_structlog
 
 
@@ -58,6 +60,8 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["Authorization", "Content-Type"],
     )
+    application.add_middleware(AuditMiddleware)
+    application.add_middleware(SubscriptionGateMiddleware)
 
     @application.get("/health", tags=["ops"])
     async def health():
