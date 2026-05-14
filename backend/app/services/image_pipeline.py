@@ -75,3 +75,68 @@ def apply_face_blackout(img: np.ndarray) -> tuple[np.ndarray, bool]:
 
     log.info("image_pipeline.face_blacked_out", face_count=len(results.detections))
     return result_img, face_found
+
+
+import asyncio
+from dataclasses import dataclass
+
+
+@dataclass
+class PipelineResult:
+    image_bytes: bytes
+    face_region_blacked_out: bool
+    scan_id: str
+
+
+def compress_image(image_bytes: bytes, max_longest_edge: int = 1600, quality: int = 85) -> bytes:
+    """Resize so longest edge <= max_longest_edge, re-encode JPEG at given quality."""
+    img = Image.open(io.BytesIO(image_bytes))
+    if img.mode != "RGB":
+        img = img.convert("RGB")
+    longest = max(img.size)
+    if longest > max_longest_edge:
+        scale = max_longest_edge / longest
+        new_size = (int(img.width * scale), int(img.height * scale))
+        img = img.resize(new_size, Image.LANCZOS)
+    out = io.BytesIO()
+    img.save(out, format="JPEG", quality=quality, optimize=True)
+    return out.getvalue()
+
+
+async def run_pipeline(image_bytes: bytes, content_type: str, scan_id: str) -> PipelineResult:
+    """
+    Run all pre-processing steps before Vertex AI.
+    Steps: validate -> strip_exif -> face_blackout -> compress.
+    Raises ValueError on validation failure.
+    Raises RuntimeError if face blackout step fails unexpectedly.
+    """
+    validate_upload(image_bytes, content_type)
+
+    clean_bytes = strip_exif(image_bytes)
+    log.info("image_pipeline.exif_stripped", scan_id=scan_id)
+
+    def _blackout_sync():
+        img_arr = np.array(Image.open(io.BytesIO(clean_bytes)).convert("RGB"))
+        img_bgr = cv2.cvtColor(img_arr, cv2.COLOR_RGB2BGR)
+        return apply_face_blackout(img_bgr)
+
+    try:
+        loop = asyncio.get_running_loop()
+        blacked_arr, face_found = await loop.run_in_executor(None, _blackout_sync)
+    except Exception as exc:
+        log.error("image_pipeline.face_blackout_failed", scan_id=scan_id, error=str(exc))
+        raise RuntimeError(f"Face blackout step failed: {exc}") from exc
+
+    log.info("image_pipeline.face_blacked_out", scan_id=scan_id, face_detected=face_found)
+
+    blacked_rgb = cv2.cvtColor(blacked_arr, cv2.COLOR_BGR2RGB)
+    pil_blacked = Image.fromarray(blacked_rgb)
+    buf = io.BytesIO()
+    pil_blacked.save(buf, format="JPEG", quality=95)
+    compressed = compress_image(buf.getvalue())
+
+    return PipelineResult(
+        image_bytes=compressed,
+        face_region_blacked_out=True,
+        scan_id=scan_id,
+    )

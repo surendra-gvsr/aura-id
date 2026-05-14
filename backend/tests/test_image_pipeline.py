@@ -138,3 +138,42 @@ def test_face_blackout_does_not_modify_outside_bbox():
         result, _ = apply_face_blackout(img)
 
     assert np.all(result[0:10, 0:10] == 255)
+
+
+from app.services.image_pipeline import compress_image, run_pipeline, PipelineResult
+
+
+def test_compress_image_shrinks_large_image():
+    large_img = Image.new("RGB", (3000, 2000), color=(100, 150, 200))
+    buf = io.BytesIO()
+    large_img.save(buf, format="JPEG")
+    compressed = compress_image(buf.getvalue())
+    out_img = Image.open(io.BytesIO(compressed))
+    assert max(out_img.size) <= 1600
+
+
+def test_compress_image_output_is_jpeg():
+    img = Image.new("RGB", (200, 150))
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG")
+    result = compress_image(buf.getvalue())
+    assert Image.open(io.BytesIO(result)).format == "JPEG"
+
+
+@pytest.mark.asyncio
+async def test_run_pipeline_sets_face_blacked_out_true():
+    jpeg = make_plain_jpeg()
+    with patch("app.services.image_pipeline.apply_face_blackout") as mock_blackout:
+        img_arr = np.ones((100, 100, 3), dtype=np.uint8) * 128
+        mock_blackout.return_value = (img_arr, True)
+        result: PipelineResult = await run_pipeline(jpeg, "image/jpeg", scan_id="test-001")
+
+    assert result.face_region_blacked_out is True
+    assert result.image_bytes is not None
+    assert len(result.image_bytes) > 0
+
+
+@pytest.mark.asyncio
+async def test_run_pipeline_raises_on_invalid_mime():
+    with pytest.raises(ValueError):
+        await run_pipeline(b"not an image", "application/pdf", scan_id="test-002")
