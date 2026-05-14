@@ -1,6 +1,4 @@
 # agent/aura_agent.spec
-block_cipher = None
-
 a = Analysis(
     ['src/main.py'],
     pathex=['.'],
@@ -13,10 +11,9 @@ a = Analysis(
     hookspath=[],
     runtime_hooks=[],
     excludes=['tkinter.test'],
-    cipher=block_cipher,
 )
 
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+pyz = PYZ(a.pure, a.zipped_data)
 
 exe = EXE(
     pyz,

@@ -10,14 +10,14 @@ if "%SIGNING_CERT_THUMBPRINT%"=="" (
     exit /b 1
 )
 
-echo Signing %EXE%...
-signtool sign /sha1 %SIGNING_CERT_THUMBPRINT% ^
-    /tr http://timestamp.digicert.com /td sha256 /fd sha256 %EXE%
+echo Signing "%EXE%"...
+signtool sign /sha1 "%SIGNING_CERT_THUMBPRINT%" ^
+    /tr https://timestamp.digicert.com /td sha256 /fd sha256 "%EXE%"
 if %ERRORLEVEL% NEQ 0 exit /b %ERRORLEVEL%
 
-echo Signing %INSTALLER%...
-signtool sign /sha1 %SIGNING_CERT_THUMBPRINT% ^
-    /tr http://timestamp.digicert.com /td sha256 /fd sha256 %INSTALLER%
+echo Signing "%INSTALLER%"...
+signtool sign /sha1 "%SIGNING_CERT_THUMBPRINT%" ^
+    /tr https://timestamp.digicert.com /td sha256 /fd sha256 "%INSTALLER%"
 if %ERRORLEVEL% NEQ 0 exit /b %ERRORLEVEL%
 
 echo All artifacts signed.

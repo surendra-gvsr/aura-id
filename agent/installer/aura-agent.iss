@@ -28,6 +28,7 @@ Name: "startup"; Description: "Start Aura ID Agent when Windows starts (recommen
 Filename: "{app}\AuraAgent.exe"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
-; Wipe keyring credential and AppData on uninstall
-Filename: "cmd.exe"; Parameters: "/c cmdkey /delete:AuraID-Agent"; Flags: runhidden
-Filename: "cmd.exe"; Parameters: "/c rmdir /s /q ""{userappdata}\AuraID"""; Flags: runhidden
+; Wipe keyring credential and AppData on uninstall — runascurrentuser ensures
+; cleanup targets the installing user's profile, not the elevated admin account.
+Filename: "cmd.exe"; Parameters: "/c cmdkey /delete:AuraID-Agent"; Flags: runhidden runascurrentuser
+Filename: "cmd.exe"; Parameters: "/c rmdir /s /q ""{userappdata}\AuraID"""; Flags: runhidden runascurrentuser

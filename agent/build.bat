@@ -6,7 +6,12 @@ pyinstaller --clean aura_agent.spec
 if %ERRORLEVEL% NEQ 0 exit /b %ERRORLEVEL%
 
 echo [2/3] Inno Setup...
-"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\aura-agent.iss
+if "%ISCC%"=="" set ISCC=C:\Program Files (x86)\Inno Setup 6\ISCC.exe
+if not exist "%ISCC%" (
+    echo ERROR: Inno Setup not found at "%ISCC%". Set ISCC env var to correct path.
+    exit /b 1
+)
+"%ISCC%" installer\aura-agent.iss
 if %ERRORLEVEL% NEQ 0 exit /b %ERRORLEVEL%
 
 echo [3/3] Signing...
