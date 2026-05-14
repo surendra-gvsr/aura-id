@@ -15,8 +15,8 @@ def _scrub(d: dict) -> dict:
     for k, v in d.items():
         if k in _PII_KEYS:
             continue
-        if isinstance(v, str) and _EMAIL_RE.search(v):
-            continue
+        if isinstance(v, str):
+            v = _EMAIL_RE.sub("[REDACTED]", v)
         result[k] = v
     return result
 
@@ -38,7 +38,7 @@ def scrub_sentry_event(event: dict, hint: dict) -> dict:
 
 
 def init_sentry(dsn: str, release: str) -> None:
-    if not dsn:
+    if not dsn or not dsn.strip():
         return
     sentry_sdk.init(
         dsn=dsn,

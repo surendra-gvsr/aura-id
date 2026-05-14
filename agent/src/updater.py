@@ -32,14 +32,18 @@ class UpdateChecker:
             r = requests.get(self._url, timeout=(5, 10))
             r.raise_for_status()
             data = r.json()
-        except Exception as exc:
-            log.warning("updater.check_failed", reason=str(exc)[:60])
+        except (requests.RequestException, ValueError, KeyError) as exc:
+            log.warning("updater.check_failed", reason=str(exc)[:200])
             return UpdateInfo(update_available=False)
 
         latest = data.get("version", "0.0.0")
+        url = data.get("url", "")
+        if url and not url.startswith("https://dl.auraid.com/"):
+            log.warning("updater.untrusted_url")
+            url = ""
         return UpdateInfo(
             update_available=_ver(latest) > _ver(self._current),
             latest_version=latest,
-            download_url=data.get("url", ""),
+            download_url=url,
             notes=data.get("notes", ""),
         )

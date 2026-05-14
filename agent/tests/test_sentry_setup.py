@@ -23,8 +23,9 @@ class TestSentryScrubbing:
     def test_removes_email_value_from_extra(self):
         event = self._event(msg="user john@hotel.com failed")
         result = scrub_sentry_event(event, {})
-        for v in result["extra"].values():
-            assert "john@hotel.com" not in str(v)
+        assert "msg" in result["extra"]
+        assert "john@hotel.com" not in result["extra"]["msg"]
+        assert "[REDACTED]" in result["extra"]["msg"]
 
     def test_removes_pii_keys_from_frame_locals(self):
         event = self._event()
