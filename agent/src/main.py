@@ -60,6 +60,9 @@ class AgentApp:
 
     def _on_quit(self) -> None:
         self._stop.set()
+        with self._scan_lock:
+            wipe(self._pending_scan)
+            self._pending_scan = None
         sys.exit(0)
 
     def _on_scan_ready(self, scan: ScanData) -> None:
@@ -79,36 +82,41 @@ class AgentApp:
             self._tray.notify("No scan pending")
             return
 
-        if self._tray.state == TrayState.SUBSCRIPTION_INACTIVE:
-            log.warning("typed", scan_id=scan.scan_id, status="failure", reason="subscription_inactive")
-            wipe(scan)
-            return
-
-        title = get_active_window_title()
-        profile = self._profiles.match_window(title)
-
-        if profile is None:
-            log.info("typed", scan_id=scan.scan_id, status="failure", reason="window_mismatch")
-            self._tray.notify("Wrong window — please focus your PMS")
-            with self._scan_lock:
-                self._pending_scan = scan
-            return
-
-        self._tray.set_state(TrayState.TYPING)
-        status, duration_ms = "failure", 0
+        retry = False
         try:
-            duration_ms = self._typer.type_scan(scan, profile)
-            status = "success"
-            log.info("typed", scan_id=scan.scan_id, fields=len(profile.field_order),
-                     duration_ms=duration_ms, status="success")
-        except TyperError as exc:
-            log.warning("typed", scan_id=scan.scan_id, status="failure", reason=str(exc))
-            self._tray.set_state(TrayState.ERROR)
+            if self._tray.state == TrayState.SUBSCRIPTION_INACTIVE:
+                log.warning("typed", scan_id=scan.scan_id, status="failure", reason="subscription_inactive")
+                return
+
+            title = get_active_window_title()
+            profile = self._profiles.match_window(title)
+
+            if profile is None:
+                log.info("typed", scan_id=scan.scan_id, status="failure", reason="window_mismatch")
+                self._tray.notify("Wrong window — please focus your PMS")
+                retry = True
+                return
+
+            self._tray.set_state(TrayState.TYPING)
+            status, duration_ms = "failure", 0
+            try:
+                duration_ms = self._typer.type_scan(scan, profile)
+                status = "success"
+                log.info("typed", scan_id=scan.scan_id, profile_name=profile.name,
+                         duration_ms=duration_ms, status="success")
+            except TyperError:
+                log.warning("typed", scan_id=scan.scan_id, status="failure", reason="typer_error")
+                self._tray.set_state(TrayState.ERROR)
+            finally:
+                self._poller.mark_typed(scan.scan_id, status=status, duration_ms=duration_ms)
+                if status == "success":
+                    self._tray.set_state(TrayState.IDLE)
         finally:
-            wipe(scan)
-            self._poller.mark_typed(scan.scan_id, status=status, duration_ms=duration_ms)
-            if status == "success":
-                self._tray.set_state(TrayState.IDLE)
+            if retry:
+                with self._scan_lock:
+                    self._pending_scan = scan
+            else:
+                wipe(scan)
 
     def _subscription_loop(self) -> None:
         while not self._stop.is_set():
