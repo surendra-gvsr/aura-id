@@ -1,5 +1,6 @@
 import type { NextConfig } from 'next';
 import { createSecureHeaders } from 'next-secure-headers';
+import { withSentryConfig } from '@sentry/nextjs';
 
 const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL
   ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).host
@@ -49,6 +50,7 @@ const secureHeaders = createSecureHeaders({
 
 const config: NextConfig = {
   reactStrictMode: true,
+  turbopack: {},
   transpilePackages: [
     '@aura/ui',
     '@aura/consent',
@@ -69,4 +71,12 @@ const config: NextConfig = {
   },
 };
 
-export default config;
+export default withSentryConfig(config, {
+  silent: true,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  widenClientFileUpload: true,
+  hideSourceMaps: true,
+  disableLogger: true,
+  automaticVercelMonitors: false,
+});
