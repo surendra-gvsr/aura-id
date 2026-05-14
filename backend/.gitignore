@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.env
+.env.*
+!.env.example
+*.egg-info/
+dist/
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+service-account.json
+*.pem
