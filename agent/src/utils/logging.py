@@ -5,10 +5,13 @@ from typing import Any
 
 import structlog
 
+# Scope: expects normalized plaintext from the backend's structured JSON API.
+# Encoded forms (percent-encoding, HTML entities) are the backend's responsibility.
+
 # Compiled regex patterns for PII detection
 _EMAIL_RE = re.compile(r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}")
 _DOB_RE = re.compile(r"\b\d{1,2}[/\-]\d{1,2}[/\-]\d{2,4}\b")
-_DOC_NUM_RE = re.compile(r"\b[A-Z]{1,3}\d{6,12}\b")
+_DOC_NUM_RE = re.compile(r"\b[A-Za-z]{1,3}\d{6,12}\b")
 
 # Known PII field names — any event containing these keys is dropped
 _PII_KEYS = frozenset(
@@ -77,13 +80,17 @@ def configure_logging(log_file: str | None = None) -> None:
     Args:
         log_file: Optional path to write logs to. Defaults to stdout.
     """
+    # Only configure once — structlog is global state.
+    # Re-calling with a different log_file has no effect after first call.
+    if structlog.is_configured():
+        return
+    _log_fh = open(log_file, "a") if log_file else sys.stdout  # noqa: SIM115
     processors = [
         structlog.stdlib.add_log_level,
         structlog.processors.TimeStamper(fmt="iso"),
         pii_scrub_processor,
         structlog.processors.JSONRenderer(),
     ]
-    _log_fh = open(log_file, "a") if log_file else sys.stdout  # noqa: SIM115
     structlog.configure(
         processors=processors,
         wrapper_class=structlog.stdlib.BoundLogger,
