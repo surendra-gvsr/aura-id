@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Aura ID Desktop Agent — types ID scan data into hotel PMS"
 requires-python = ">=3.11"
 dependencies = [
-    "pyautogui>=0.9.54",
+    "pyautogui~=0.9.54",
     "keyboard>=0.13.5",
     "pystray>=0.19.5",
     "Pillow>=10.4.0",
@@ -21,7 +21,7 @@ dev = [
     "pytest-mock>=3.14.0",
     "responses>=0.25.0",
     "black>=24.0.0",
-    "ruff>=0.4.0",
+    "ruff>=0.15.0",
     "pyinstaller>=6.5.0",
 ]
 
