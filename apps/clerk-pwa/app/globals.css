@@ -2,7 +2,6 @@
 @source "../../packages/ui/src/**/*.{ts,tsx}";
 @source "../../packages/consent/src/**/*.{ts,tsx}";
 @import 'tw-animate-css';
-@import 'shadcn/tailwind.css';
 
 @custom-variant dark (&:is(.dark *));
 
