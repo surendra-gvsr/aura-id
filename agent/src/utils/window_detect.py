@@ -1,7 +1,11 @@
 # agent/src/utils/window_detect.py
 """Win32 active window title detection. Windows-only."""
+import sys
 import ctypes
 import ctypes.wintypes
+
+if sys.platform != "win32":
+    raise RuntimeError("window_detect requires Windows")
 
 
 def get_active_window_title() -> str:

@@ -36,8 +36,7 @@ class TestProfileLoader:
     def test_match_window_returns_none_for_notepad(self):
         loader = ProfileLoader(PROFILES_DIR)
         p = loader.match_window("Notepad - Untitled")
-        # generic.json matches everything — returns PmsProfile or None, never exception
-        assert p is None or isinstance(p, PmsProfile)
+        assert p is None
 
     def test_all_five_profiles_load(self):
         loader = ProfileLoader(PROFILES_DIR)

@@ -26,7 +26,7 @@ class PmsProfile:
     inter_field_delay_ms: int = 80
     fail_safe_corner: bool = True
     max_duration_ms: int = 10000
-    _re: re.Pattern | None = field(default=None, init=False, repr=False)
+    _re: re.Pattern | None = field(default=None, init=False, repr=False, compare=False, hash=False)
 
     def matches_window(self, title: str) -> bool:
         if self._re is None:
@@ -76,6 +76,6 @@ class ProfileLoader:
                 profile = self.get(json_file.stem)
                 if profile.matches_window(window_title):
                     return profile
-            except ProfileNotFoundError:
+            except Exception:
                 pass
         return None
