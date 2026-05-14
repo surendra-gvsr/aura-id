@@ -31,8 +31,10 @@ class PairingClient:
             raise PairingError(f"network error: {exc}") from exc
         if not r.ok:
             body = {}
-            if r.headers.get("content-type", "").startswith("application/json"):
+            try:
                 body = r.json()
+            except Exception:
+                pass
             raise PairingError(body.get("error", f"http_{r.status_code}"))
         return r.json()["token"]
 
