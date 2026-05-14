@@ -1,5 +1,40 @@
 # Project: my-project
 
+## Working Style
+
+Work autonomously. Complete the entire scope without stopping for approval.
+Specifically:
+
+- Do NOT ask permission to add dependencies that are listed in my original
+  prompt or are standard for the stack. Just install them.
+- Do NOT ask before creating files, folders, or modules.
+- Do NOT ask before running tests, linters, or formatters.
+- Do NOT ask before committing in small logical chunks with conventional
+  commit messages.
+- Do NOT show me a plan before writing code unless you're about to make a
+  decision that affects the API contract, the database schema, or the
+  compliance posture (face cropping, retention, audit logging, Vertex AI).
+- Do NOT ask "should I continue?" — yes, always continue.
+- Do NOT summarize after every small step — only summarize at major
+  milestones (end of a Phase, end of a feature, when blocked).
+
+Only stop and ask if:
+
+1. You need a credential or secret I haven't provided (API keys, etc.)
+2. You hit an error you can't resolve after 3 attempts
+3. You're about to make a decision that affects API contract, schema, or
+   compliance (the four protected areas above)
+4. You've completed the entire scope and need new direction
+
+When you finish a major milestone, post a single summary message with:
+
+- What was built
+- What's tested
+- What's deployed (if anything)
+- What's next
+
+Then immediately start the next milestone without waiting.
+
 ## ⚠️ Security Rules — Always Follow
 
 ### 1. RATE LIMITING
