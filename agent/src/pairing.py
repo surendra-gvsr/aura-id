@@ -33,10 +33,13 @@ class PairingClient:
             body = {}
             try:
                 body = r.json()
-            except Exception:
+            except (ValueError, requests.exceptions.JSONDecodeError):
                 pass
             raise PairingError(body.get("error", f"http_{r.status_code}"))
-        return r.json()["token"]
+        token = r.json().get("token")
+        if not token:
+            raise PairingError("server returned 200 but no token in response")
+        return token
 
 
 def save_token(token: str) -> None:

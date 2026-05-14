@@ -53,3 +53,15 @@ class TestPairingClient:
         client = PairingClient(api_base="https://api.auraid.com/v1")
         with pytest.raises(PairingError, match="network error"):
             client.claim("CODE-789")
+
+    @resp_mock.activate
+    def test_claim_raises_on_missing_token_in_200(self):
+        resp_mock.add(
+            resp_mock.POST,
+            "https://api.auraid.com/v1/workstations/claim",
+            json={"result": "ok"},
+            status=200,
+        )
+        client = PairingClient(api_base="https://api.auraid.com/v1")
+        with pytest.raises(PairingError, match="no token"):
+            client.claim("CODE-200")

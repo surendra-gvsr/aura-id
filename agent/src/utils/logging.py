@@ -27,6 +27,8 @@ _PII_KEYS = frozenset(
         "postal_code",
         "parsed_data",
         "fields_data",
+        "token",
+        "workstation_token",
     }
 )
 
