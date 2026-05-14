@@ -8,7 +8,7 @@ import structlog
 # Compiled regex patterns for PII detection
 _EMAIL_RE = re.compile(r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}")
 _DOB_RE = re.compile(r"\b\d{1,2}[/\-]\d{1,2}[/\-]\d{2,4}\b")
-_DOC_NUM_RE = re.compile(r"\b[A-Z]{1,3}\d{6,12}\b|\b\d{8,12}\b")
+_DOC_NUM_RE = re.compile(r"\b[A-Z]{1,3}\d{6,12}\b")
 
 # Known PII field names — any event containing these keys is dropped
 _PII_KEYS = frozenset(
@@ -83,11 +83,10 @@ def configure_logging(log_file: str | None = None) -> None:
         pii_scrub_processor,
         structlog.processors.JSONRenderer(),
     ]
+    _log_fh = open(log_file, "a") if log_file else sys.stdout  # noqa: SIM115
     structlog.configure(
         processors=processors,
         wrapper_class=structlog.stdlib.BoundLogger,
         context_class=dict,
-        logger_factory=structlog.PrintLoggerFactory(
-            file=open(log_file, "a") if log_file else sys.stdout  # noqa: SIM115
-        ),
+        logger_factory=structlog.PrintLoggerFactory(file=_log_fh),
     )

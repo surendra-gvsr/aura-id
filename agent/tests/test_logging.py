@@ -22,8 +22,8 @@ class TestPiiScrubProcessor:
 
     def test_blocks_pii_key_in_dict(self):
         """Any event containing a known PII key must be dropped."""
-        for key in ["first_name", "last_name", "dob", "email", "doc_number",
-                    "address_line_1", "postal_code"]:
+        from src.utils.logging import _PII_KEYS
+        for key in _PII_KEYS:
             event_dict = {"event": "test", key: "some_value"}
             with pytest.raises(structlog.DropEvent):
                 pii_scrub_processor(None, "info", event_dict)
