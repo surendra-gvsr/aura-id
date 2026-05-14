@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Geist } from 'next/font/google';
 import { Toaster } from '@aura/ui';
+import { Providers } from './providers';
 import './globals.css';
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist' });
@@ -29,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={geist.variable}>
       <body className="min-h-dvh bg-background font-sans antialiased">
-        {children}
+        <Providers>{children}</Providers>
         <Toaster />
       </body>
     </html>

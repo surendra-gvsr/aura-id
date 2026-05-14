@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
 import { Button } from '@aura/ui';
 import { CaptureNotice } from '@aura/consent';
+import { createClient } from '@/lib/supabase/client';
 import { CameraViewfinder } from './CameraViewfinder';
 import { useCamera } from './useCamera';
 import { useGlareDetection } from './useGlareDetection';
+import { useUpload } from './useUpload';
 
 const DEFAULT_RETENTION_HOURS = 24;
 
@@ -15,9 +16,9 @@ export default function CapturePage() {
   const router = useRouter();
   const camera = useCamera();
   const { checkGlare } = useGlareDetection(camera.videoRef);
+  const upload = useUpload();
   const [glareWarning, setGlareWarning] = useState(false);
   const [retentionHours, setRetentionHours] = useState(DEFAULT_RETENTION_HOURS);
-  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (camera.state !== 'ready') return;
@@ -36,37 +37,32 @@ export default function CapturePage() {
   }, []);
 
   const handleCapture = useCallback(async () => {
-    if (uploading) return;
+    if (upload.isPending) return;
     const blob = await camera.capture();
     if (!blob) return;
 
     navigator.vibrate?.(30);
-    setUploading(true);
-    toast.loading('Uploading…', { id: 'upload' });
 
-    try {
-      let uploadBlob = blob;
-      if (blob.size > 1_048_576) {
-        uploadBlob = await compressToTarget(blob, 1_048_576);
-      }
-
-      const form = new FormData();
-      form.append('image', uploadBlob, 'id.jpg');
-
-      toast.loading('Extracting text…', { id: 'upload' });
-      const res = await fetch('/api/scans', { method: 'POST', body: form });
-      if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
-
-      const scan = (await res.json()) as { id: string };
-      toast.dismiss('upload');
-      router.push(`/capture/confirm?scan_id=${scan.id}`);
-    } catch {
-      toast.dismiss('upload');
-      toast.error('Upload failed — saved for retry when connection returns');
-    } finally {
-      setUploading(false);
+    let uploadBlob = blob;
+    if (blob.size > 1_048_576) {
+      uploadBlob = await compressToTarget(blob, 1_048_576);
     }
-  }, [camera, router, uploading]);
+
+    const supabase = createClient();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const sessionToken = session?.access_token ?? 'anon';
+
+    upload.mutate(
+      { image: uploadBlob, hotelId: 'placeholder', sessionToken },
+      {
+        onSuccess: (scan) => {
+          router.push(`/capture/confirm?scan_id=${scan.id}`);
+        },
+      }
+    );
+  }, [camera, router, upload]);
 
   return (
     <div className="flex h-dvh flex-col">
@@ -88,7 +84,7 @@ export default function CapturePage() {
 
         <button
           onClick={handleCapture}
-          disabled={camera.state !== 'ready' || uploading}
+          disabled={camera.state !== 'ready' || upload.isPending}
           aria-label="Capture ID"
           className="h-16 w-16 rounded-full border-4 border-white bg-white/20 transition-transform hover:bg-white/30 active:scale-95 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
         />
