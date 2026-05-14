@@ -75,3 +75,12 @@ class TestTyperEngine:
         TyperEngine().type_scan(_scan(dob="1990-01-15"), profile)
         typed = [c.args[0] for c in mock_pag.typewrite.call_args_list]
         assert typed[0] == "01/15/1990"
+
+    @patch("src.typer.time")
+    @patch("src.typer.pyautogui")
+    def test_raises_typer_error_when_max_duration_exceeded(self, mock_pag, mock_time):
+        from src.typer import TyperError
+        profile = _profile([("last_name", "tab")])
+        profile.max_duration_ms = -1  # always exceeded
+        with pytest.raises(TyperError, match="max_duration_exceeded"):
+            TyperEngine().type_scan(_scan(), profile)

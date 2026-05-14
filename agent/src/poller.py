@@ -29,10 +29,12 @@ class Poller:
         except requests.RequestException as exc:
             log.warning("poll.error", reason=str(exc)[:60])
             return None
-        if r.status_code == 204 or not r.content:
+        if r.status_code == 204:
             return None
         if not r.ok:
             log.warning("poll.http_error", status=r.status_code)
+            return None
+        if not r.content:
             return None
         data = r.json()
         fields = data.get("fields", {})
@@ -46,12 +48,15 @@ class Poller:
     def mark_typed(self, scan_id: str, *, status: str, duration_ms: int) -> None:
         """POST /scans/{scan_id}/mark-typed — audit trail, no PII."""
         try:
-            self._session.post(
+            r = self._session.post(
                 f"{self._api_base}/scans/{scan_id}/mark-typed",
                 json={"status": status, "duration_ms": duration_ms},
                 timeout=(5, 10),
             )
-            log.info("typed", scan_id=scan_id, status=status, duration_ms=duration_ms)
+            if r.ok:
+                log.info("typed", scan_id=scan_id, status=status, duration_ms=duration_ms)
+            else:
+                log.warning("mark_typed.http_error", scan_id=scan_id, http_status=r.status_code)
         except requests.RequestException as exc:
             log.warning("mark_typed.error", scan_id=scan_id, reason=str(exc)[:60])
 
