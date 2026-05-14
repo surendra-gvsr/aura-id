@@ -1,0 +1,23 @@
+{
+  "name": "Generic PMS",
+  "window_title_regex": ".*",
+  "field_order": [
+    { "field": "last_name", "action": "type", "post_action": "tab" },
+    { "field": "first_name", "action": "type", "post_action": "tab" },
+    {
+      "field": "dob",
+      "action": "type",
+      "format": "MM/DD/YYYY",
+      "post_action": "tab"
+    },
+    { "field": "doc_number", "action": "type", "post_action": "tab" },
+    { "field": "address_line_1", "action": "type", "post_action": "tab" },
+    { "field": "city", "action": "type", "post_action": "tab" },
+    { "field": "postal_code", "action": "type", "post_action": "tab" },
+    { "field": "email", "action": "type", "post_action": "enter" }
+  ],
+  "pre_typing_delay_ms": 150,
+  "inter_field_delay_ms": 80,
+  "fail_safe_corner": true,
+  "max_duration_ms": 10000
+}
