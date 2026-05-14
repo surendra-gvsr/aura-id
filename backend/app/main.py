@@ -90,3 +90,16 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+
+
+if __name__ == "__main__":
+    import json
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] == "export-openapi":
+        import pathlib
+        output_path = sys.argv[2] if len(sys.argv) > 2 else "../shared/openapi.json"
+        schema = app.openapi()
+        pathlib.Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+        with open(output_path, "w") as f:
+            json.dump(schema, f, indent=2)
+        print(f"OpenAPI schema written to {output_path}")
