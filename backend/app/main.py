@@ -63,6 +63,19 @@ def create_app() -> FastAPI:
     application.add_middleware(AuditMiddleware)
     application.add_middleware(SubscriptionGateMiddleware)
 
+    from slowapi import _rate_limit_exceeded_handler
+    from slowapi.errors import RateLimitExceeded
+    from app.deps import limiter
+    from app.routers.scans import router as scans_router
+    from app.routers.guests import router as guests_router
+    from app.routers.hotels import router as hotels_router
+
+    application.state.limiter = limiter
+    application.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    application.include_router(scans_router, prefix="/api/v1")
+    application.include_router(guests_router, prefix="/api/v1")
+    application.include_router(hotels_router, prefix="/api/v1")
+
     @application.get("/health", tags=["ops"])
     async def health():
         # Simple liveness check — no DB ping, no secrets exposed
