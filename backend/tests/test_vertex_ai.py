@@ -1,6 +1,6 @@
 # backend/tests/test_vertex_ai.py
 import pytest
-from app.services.vertex_ai import FakeVertexClient
+from app.services.vertex_ai import FakeVertexClient, check_for_biometric_content
 from app.models.scan import ParsedID
 
 
@@ -26,3 +26,20 @@ async def test_fake_client_raises_on_injected_error():
     client = FakeVertexClient(raise_error=ValueError("Vertex AI unavailable"))
     with pytest.raises(ValueError, match="Vertex AI unavailable"):
         await client.extract_id_fields(b"anyimage")
+
+
+def test_biometric_check_flags_eye_color():
+    assert check_for_biometric_content('{"first_name":"John","notes":"blue eyes"}') is True
+
+
+def test_biometric_check_flags_facial_description():
+    assert check_for_biometric_content("the person has a broad nose and square jaw") is True
+
+
+def test_biometric_check_passes_clean_json():
+    clean = '{"first_name":"John","last_name":"Smith","doc_number":"AB123456"}'
+    assert check_for_biometric_content(clean) is False
+
+
+def test_biometric_check_passes_address_fields():
+    assert check_for_biometric_content('{"city":"Chicago","state":"IL"}') is False
