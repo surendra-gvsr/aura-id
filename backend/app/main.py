@@ -9,11 +9,22 @@ from app.config import settings
 from app.utils.logging import configure_structlog
 
 
+_PII_KEYS = ("first_name", "last_name", "dob", "doc_number", "email", "phone", "address", "username")
+
+
 def _sentry_before_send(event, hint):
     """Strip PII fields from Sentry events before transmission."""
-    for key in ("first_name", "last_name", "dob", "doc_number", "email", "phone", "address"):
+    if event is None:
+        return None
+    for key in _PII_KEYS:
         event.get("extra", {}).pop(key, None)
-        event.get("contexts", {}).pop(key, None)
+    # Sentry user context — clear entirely rather than scrub selectively
+    if "user" in event:
+        event["user"] = {}
+    # contexts["user"] sub-dict
+    contexts = event.get("contexts", {})
+    if isinstance(contexts.get("user"), dict):
+        contexts["user"] = {}
     return event
 
 
