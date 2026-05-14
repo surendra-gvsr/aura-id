@@ -5,7 +5,7 @@ from app.utils.pii import scrub_pii_from_string
 
 def _pii_scrub_processor(logger, method, event_dict):
     """structlog processor — scrubs PII from every log line before output."""
-    for key in ("first_name", "last_name", "dob", "doc_number", "email", "phone"):
+    for key in ("first_name", "last_name", "dob", "doc_number", "email", "phone", "address"):
         event_dict.pop(key, None)
     if isinstance(event_dict.get("event"), str):
         event_dict["event"] = scrub_pii_from_string(event_dict["event"])
