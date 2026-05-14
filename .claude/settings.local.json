@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__plugin_playwright_playwright__browser_click",
+      "mcp__plugin_playwright_playwright__browser_file_upload",
+      "mcp__plugin_playwright_playwright__browser_snapshot",
+      "mcp__plugin_playwright_playwright__browser_network_requests",
+      "mcp__plugin_playwright_playwright__browser_network_request",
+      "mcp__plugin_playwright_playwright__browser_navigate",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__plugin_context7_context7__query-docs",
+      "Bash(npm install *)",
+      "mcp__plugin_playwright_playwright__browser_take_screenshot",
+      "mcp__plugin_playwright_playwright__browser_console_messages",
+      "mcp__plugin_playwright_playwright__browser_fill_form",
+      "mcp__plugin_playwright_playwright__browser_evaluate",
+      "Bash(npx shadcn@latest add select --yes)",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(echo \"Dev server starting with PID $!\")",
+      "mcp__plugin_playwright_playwright__browser_wait_for",
+      "Bash(netstat -ano)",
+      "WebSearch",
+      "WebFetch(domain:ui.shadcn.com)",
+      "WebFetch(domain:magicui.design)",
+      "WebFetch(domain:github.com)",
+      "Bash(powershell.exe *)",
+      "Bash(claude mcp *)",
+      "Bash(npm show *)",
+      "Bash(npx getshitdone *)",
+      "Bash(claude *)"
+    ]
+  }
+}
