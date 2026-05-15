@@ -1,0 +1,29 @@
+{
+  "node": {
+    "4063d3fa67081c9aa5fbe15ee99244af3a216b2963": {
+      "workers": {
+        "app/(auth)/login/page": {
+          "moduleId": 15166,
+          "async": false,
+          "exportedName": "loginWithEmail",
+          "filename": "apps/clerk-pwa/app/(auth)/login/actions.ts"
+        }
+      },
+      "exportedName": "loginWithEmail",
+      "filename": "apps/clerk-pwa/app/(auth)/login/actions.ts"
+    },
+    "0039bf603ae86fd16838f82c9c45688bebf4561c83": {
+      "workers": {
+        "app/(auth)/login/page": {
+          "moduleId": 15166,
+          "async": false,
+          "exportedName": "loginWithGoogle",
+          "filename": "apps/clerk-pwa/app/(auth)/login/actions.ts"
+        }
+      },
+      "exportedName": "loginWithGoogle",
+      "filename": "apps/clerk-pwa/app/(auth)/login/actions.ts"
+    }
+  },
+  "edge": {}
+}

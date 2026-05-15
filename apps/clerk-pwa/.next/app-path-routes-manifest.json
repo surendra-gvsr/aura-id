@@ -1,0 +1,12 @@
+{
+  "/(auth)/login/page": "/login",
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/auth/callback/route": "/auth/callback",
+  "/capture/confirm/page": "/capture/confirm",
+  "/capture/page": "/capture",
+  "/favicon.ico/route": "/favicon.ico",
+  "/history/page": "/history",
+  "/page": "/",
+  "/settings/page": "/settings"
+}

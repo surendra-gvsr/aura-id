@@ -13,7 +13,12 @@
       "Bash(gh pr *)",
       "Bash(jest *)",
       "Bash(playwright *)",
-      "Bash(npx prettier *)"
+      "Bash(npx prettier *)",
+      "Bash(pnpm --filter @aura/clerk-pwa typecheck *)",
+      "Bash(pnpm --filter @aura/dashboard typecheck *)",
+      "Bash(pnpm --version)",
+      "Bash(pnpm --filter @aura/clerk-pwa build *)",
+      "Bash(pnpm --filter @aura/dashboard build *)"
     ],
     "ask": ["Bash(git push *)", "Bash(npm publish *)"],
     "deny": [

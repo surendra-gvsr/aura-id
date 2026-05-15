@@ -1,0 +1,17 @@
+{
+  "node": {
+    "40c907d2cf3b40f7776c94a1f23a516de1aa6fb84f": {
+      "workers": {
+        "app/(auth)/login/page": {
+          "moduleId": 21605,
+          "async": false,
+          "exportedName": "loginWithEmail",
+          "filename": "apps/dashboard/app/(auth)/login/actions.ts"
+        }
+      },
+      "exportedName": "loginWithEmail",
+      "filename": "apps/dashboard/app/(auth)/login/actions.ts"
+    }
+  },
+  "edge": {}
+}

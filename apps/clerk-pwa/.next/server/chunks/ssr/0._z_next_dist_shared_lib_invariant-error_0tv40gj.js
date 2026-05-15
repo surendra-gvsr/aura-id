@@ -1,0 +1,3 @@
+module.exports=[51500,(a,b,c)=>{"use strict";Object.defineProperty(c,"__esModule",{value:!0}),Object.defineProperty(c,"InvariantError",{enumerable:!0,get:function(){return d}});class d extends Error{constructor(a,b){super(`Invariant: ${a.endsWith(".")?a:a+"."} This is a bug in Next.js.`,b),this.name="InvariantError"}}}];
+
+//# sourceMappingURL=0._z_next_dist_shared_lib_invariant-error_0tv40gj.js.map
