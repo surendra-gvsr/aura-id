@@ -1,4 +1,4 @@
-# Project: my-project
+# Project: Aura ID
 
 ## Working Style
 
@@ -56,18 +56,100 @@ Never log secrets or include them in API responses.
 
 ---
 
+## Project Overview
+
+Aura ID is a B2B SaaS that captures guest IDs at hotels via mobile, extracts text-only data using Google Vertex AI (Gemini 2.5 Flash), and feeds it to a desktop typing agent that auto-fills legacy hotel PMS software.
+
+**Repo layout:**
+
+- `backend/` — Python 3.11 / FastAPI backend (active development, `backend` branch)
+- `app/` / `components/` — Next.js 15 frontend (clerk PWA, same repo)
+- `docs/superpowers/specs/` — design specs
+- `docs/superpowers/plans/` — implementation plans
+- `shared/openapi.json` — exported OpenAPI schema
+
+**Key compliance rules (non-negotiable):**
+
+- No biometric processing — face region blacked out before any image leaves the pipeline
+- Vertex AI only (google-cloud-aiplatform SDK) — never direct Gemini API
+- Images auto-delete within 24h default (max 30 days per hotel)
+- Append-only audit log on every PII read/write, retained 7 years
+- No PII in logs (names masked, DOB omitted, doc numbers last-4 only)
+
+---
+
+## What's Built (Phase 1 — complete, pushed to `backend` branch)
+
+### Backend (`backend/`)
+
+| Layer             | Files                                                                                                     | Status |
+| ----------------- | --------------------------------------------------------------------------------------------------------- | ------ |
+| Config + logging  | `app/config.py`, `app/utils/logging.py`, `app/utils/pii.py`                                               | ✅     |
+| Database schema   | `app/db/schema.sql` — 7 tables, RLS, pgcrypto, indexes                                                    | ✅     |
+| Auth dependencies | `app/deps.py` — JWT clerk auth + `ws_live_` workstation token (bcrypt)                                    | ✅     |
+| Pydantic models   | `app/models/common.py`, `scan.py`, `guest.py`                                                             | ✅     |
+| Middleware        | `app/middleware/audit.py`, `subscription_gate.py`                                                         | ✅     |
+| Image pipeline    | `app/services/image_pipeline.py` — validate, EXIF strip, face blackout (MediaPipe), compress              | ✅     |
+| Storage service   | `app/services/storage.py` — Supabase Storage upload/delete/signed URL                                     | ✅     |
+| Vertex AI         | `app/services/vertex_ai.py` — abstract interface, FakeVertexClient, VertexAIClient + biometric rejection  | ✅     |
+| Audit service     | `app/services/audit.py` — append-only write_audit_log()                                                   | ✅     |
+| Retention job     | `app/services/retention.py` — APScheduler hourly image deletion                                           | ✅     |
+| Scans router      | `app/routers/scans.py` — POST /scans, GET /scans/:id, GET /scans/pending-type, POST /scans/:id/mark-typed | ✅     |
+| Guests router     | `app/routers/guests.py` — GET /guests, GET /guests/:id, DELETE /guests/:id (soft delete)                  | ✅     |
+| Hotels router     | `app/routers/hotels.py` — GET /hotels/me                                                                  | ✅     |
+| Rate limiting     | slowapi wired to all endpoints                                                                            | ✅     |
+| Tests             | 66/66 passing across 12 test files                                                                        | ✅     |
+| Docker            | Multi-stage Dockerfile, non-root user, healthcheck                                                        | ✅     |
+| OpenAPI           | `shared/openapi.json` exported                                                                            | ✅     |
+
+### Frontend (Next.js — separate work, `backend` branch)
+
+- Supabase SSR auth, middleware, login page
+- `/capture` screen with camera, overlay, glare detection, consent notice
+- `/capture/confirm` with text-only review form
+- POST /scans wired via TanStack Query with offline IndexedDB fallback
+
+---
+
+## What's Left
+
+### Phase 2 — Billing & Compliance
+
+- `app/routers/billing.py` — Stripe checkout, subscription management
+- `app/routers/webhooks.py` — Stripe webhook handler
+- `app/routers/data_subject.py` — GDPR/CCPA access/delete/export requests
+- `app/routers/workstations.py` — pairing flow (6-digit code), revocation, heartbeat
+
+### Phase 3 — Desktop Agent
+
+- Plan at `docs/superpowers/plans/2026-05-14-aura-desktop-agent.md`
+- Python Windows agent that reads from GET /scans/pending-type and types into hotel PMS
+
+### Deployment
+
+- Apply `backend/app/db/schema.sql` to Supabase project
+- Set Railway env vars: `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `SUPABASE_JWT_SECRET`, `GCP_PROJECT_ID`, `GOOGLE_APPLICATION_CREDENTIALS`, `DOC_ENCRYPTION_KEY`, `SENTRY_DSN`, `ENVIRONMENT=production`, `CORS_ORIGINS`
+- Create Supabase Storage private bucket named `scan-images`
+
+---
+
 ## Stack & Conventions
 
+### Backend
+
+- Runtime: Python 3.11, FastAPI, async
+- Tests: `cd backend && python -m pytest tests/ -v`
+- Single file: `python -m pytest tests/test_<name>.py -v`
+- Commit format: `feat/fix/chore(backend): description`
+- All router tests use `dependency_overrides[get_supabase]` and `dependency_overrides[get_current_user]` — do NOT use `patch("app.routers.*.get_supabase")` (Depends() captures the reference at import time)
+
+### Frontend
+
 - Runtime: Node.js with npm
-- JavaScript (keep strict, no unnecessary defaults)
-- Commit format: feat/fix/chore(scope): description
-
-## Commands
-
-- Build: npm run build
-- Typecheck (fast): npm run typecheck
-- Tests: npm test
-- Single file: npm test -- --testPathPattern="<glob>"
+- Build: `npm run build`
+- Typecheck: `npm run typecheck`
+- Tests: `npm test`
+- Commit format: `feat/fix/chore(scope): description`
 
 ## Slash Commands (.claude/commands/)
 
